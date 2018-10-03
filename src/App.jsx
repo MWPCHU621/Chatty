@@ -15,6 +15,12 @@ class App extends Component {
     this.socket = new WebSocket("ws://localhost:3001/");
   }
 
+  updateUsername = username => {
+    //let currentUser = {name:}
+    this.setState({currentUser: {name: username}});
+    console.log(this.state.currentUser);
+  }
+
   sendToServer = content => {
     let socket = this.socket;
     const message = {content, username: this.state.currentUser.name}
@@ -27,8 +33,6 @@ class App extends Component {
       });
     }
   }
-
-
 
   componentDidMount() {
 
@@ -50,7 +54,11 @@ class App extends Component {
     return (
       <div>
         <MessageList messages={this.state.messages}/>
-        <ChatBar currentUser={this.state.currentUser} onMessageSubmit={this.sendToServer}/>
+        <ChatBar
+          currentUser={this.state.currentUser}
+          onMessageSubmit={this.sendToServer}
+          onUsernameSubmit={this.updateUsername}
+        />
       </div>
     );
   }

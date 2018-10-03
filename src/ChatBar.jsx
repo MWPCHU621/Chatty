@@ -13,12 +13,17 @@ class ChatBar extends React.Component {
 
   }
 
-    onKeyDown = event => {
-      // console.log(event.target.value);
-      if(event.key === 'Enter') {
-        this.props.onMessageSubmit(this.state.message);
-      }
+  onKeyDown = event => {
+    if(event.key === 'Enter') {
+      this.props.onMessageSubmit(this.state.message);
     }
+  }
+
+  onKeyUp = event => {
+    if(event.key === 'Enter') {
+      this.props.onUsernameSubmit(this.state.currentUser);
+    }
+  }
 
   handleMessageUpdate = event => {
     this.setState({message: event.target.value})
@@ -29,12 +34,12 @@ class ChatBar extends React.Component {
   }
 
   render() {
-
     return(
       <footer className="chatbar">
         <input
           className="chatbar-username"
           value={this.state.currentUser}
+          onKeyUp={this.onKeyUp}
           onChange={this.handleUsernameUpdate}
         />
         <input
