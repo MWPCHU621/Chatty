@@ -2,52 +2,64 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 class ChatBar extends React.Component {
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      currentUser:"",
-      message:""
-    }
-
+  state = {
+    currentUser:"",
+    message:"",
   }
 
-  onKeyDown = event => {
+  componentDidMount() {
+    this.setState({ currentUser: this.props.currentUser.name});
+  }
+
+  inputHandler = event => {
+    const {
+      currentUser,
+      message,
+    } = this.state;
+
+    const {
+      onMessageSubmit,
+      onUsernameSubmit,
+    } = this.props;
+
     if(event.key === 'Enter') {
-      this.props.onMessageSubmit(this.state.message);
+        event.currentTarget.name === 'message'
+        ? onMessageSubmit(message, "postMessage", currentUser)
+        : onUsernameSubmit(message, "postNotification", currentUser);
     }
-  }
+  };
 
-  onKeyUp = event => {
-    if(event.key === 'Enter') {
-      this.props.onUsernameSubmit(this.state.currentUser);
-    }
-  }
+  updateHandler = event => {
+    const {
+      name,
+      value,
+    } = event.currentTarget;
 
-  handleMessageUpdate = event => {
-    this.setState({message: event.target.value})
-  }
-
-  handleUsernameUpdate = event => {
-    this.setState({currentUser: event.target.value})
-  }
+    this.setState({[name]: value})
+  };
 
   render() {
+    const {
+      currentUser,
+      message,
+    } = this.state;
+
     return(
       <footer className="chatbar">
         <input
           className="chatbar-username"
-          value={this.state.currentUser}
-          onKeyUp={this.onKeyUp}
-          onChange={this.handleUsernameUpdate}
+          name="currentUser"
+          onChange={this.updateHandler}
+          onKeyUp={this.inputHandler}
+          value={currentUser}
         />
         <input
           className="chatbar-message"
+          name="message"
+          onChange={this.updateHandler}
+          onKeyUp={this.inputHandler}
           placeholder="Type a message and hit ENTER"
-          onKeyUp={this.onKeyDown}
-          value={this.state.message}
-          onChange={this.handleMessageUpdate}
+          value={message}
         />
       </footer>
     );

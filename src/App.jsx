@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component, Fragment } from 'react';
 import ChatBar from './ChatBar.jsx';
 import MessageList from './MessageList.jsx';
 
@@ -9,58 +9,119 @@ class App extends Component {
     this.state = {
       key: "",
       messages: [],
-      currentUser: {name: "james"}
+      currentUser: {
+        name: "Anonymous",
+      },
+      userCount: 0,
     }
 
     this.socket = new WebSocket("ws://localhost:3001/");
   }
 
-  updateUsername = username => {
-    //let currentUser = {name:}
-    this.setState({currentUser: {name: username}});
-    console.log(this.state.currentUser);
-  }
 
-  sendToServer = content => {
-    let socket = this.socket;
-    const message = {content, username: this.state.currentUser.name}
-    this.socket.send(JSON.stringify(message));
-    socket.onmessage = event => {
-      let incomingMsg = JSON.parse(event.data)
-      this.setState({
-        messages:[...this.state.messages, incomingMsg],
-        key: incomingMsg.uuid
-      });
+  sendToServer = (content, type, username) => {
+    const {
+      currentUser,
+    } = this.state;
+
+    const {
+      socket,
+    } = this;
+
+    if(type === "postMessage") {
+      const message = {type, content, username: currentUser.name}
+
+      socket.send(JSON.stringify(message));
+    } else if(type === "postNotification") {
+      const changeNameMessage = currentUser.name + " has changed their name to " + username;
+
+      if(currentUser.name !== username) {
+        this.setState({currentUser: {name:username}});
+        const message = {type, content: changeNameMessage};
+        socket.send(JSON.stringify(message));
+      }
     }
   }
 
   componentDidMount() {
 
-    console.log("componentDidMount <App />");
-    // setTimeout(() => {
-    //   console.log("Simulating incoming message");
-    //   // Add a new message to the list of messages in the data store
-    //   const newMessage = {id: 3, username: "Michelle", content: "Hello there!"};
-    //   const messages = this.state.messages.concat(newMessage)
-    //   // Update the state of the app component.
-    //   // Calling setState will trigger a call to render() in App and all child components.
-    //   this.setState({messages: messages})
-    // }, 3000);
+    const {
+      socket,
+    } = this;
 
+    console.log("componentDidMount <App />");
+
+    socket.onmessage = event => {
+      const {
+        messages,
+      } = this.state;
+      const incomingMsg = JSON.parse(event.data);
+
+      switch(incomingMsg.type) {
+        case "incomingMessage":
+        console.log('prev messages', messages, incomingMsg)
+          this.setState({
+            messages:[
+              ...messages,
+              incomingMsg,
+            ],
+            key: incomingMsg.uuid
+          });
+          break;
+
+        case "incomingNotification":
+          this.setState({
+            messages:[
+              ...messages,
+              incomingMsg,
+            ],
+            key: incomingMsg.uuid
+          });
+          break;
+
+        case "userCountChanged":
+          this.setState({
+            userCount: incomingMsg.userCount,
+          })
+          break;
+
+        default:
+          console.warn('received undetermined message type', incomingMsg);
+          break;
+      };
+
+      window.scrollTo(0, document.body.scrollHeight);
+    };
   }
 
-
   render() {
+    const {
+      currentUser,
+      messages,
+      userCount,
+    } = this.state;
+
+    const {
+      sendToServer,
+    } = this;
+
     return (
-      <div>
-        <MessageList messages={this.state.messages}/>
+      <Fragment>
+        <nav className="navbar">
+          <a href="/" className="navbar-brand">Chatty</a>
+          <label className="navbar-userCount">{userCount} users online</label>
+        </nav>
+
+        {messages.length > 0 && <MessageList messages={messages}/>}
+
         <ChatBar
-          currentUser={this.state.currentUser}
-          onMessageSubmit={this.sendToServer}
-          onUsernameSubmit={this.updateUsername}
+          currentUser={currentUser}
+          onMessageSubmit={sendToServer}
+          onUsernameSubmit={sendToServer}
         />
-      </div>
+      </Fragment>
     );
   }
 }
+
 export default App;

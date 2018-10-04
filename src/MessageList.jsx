@@ -6,18 +6,18 @@ class MessageList extends Component {
   render() {
 
     return(
-      <div>
+      <ul>
       {this.props.messages.map((message, i) => (
-        <Message key={i}username={message.username} message={message.content} />
+        <Message
+          key={i}
+          type={message.type}
+          username={message.username}
+          message={message.content}
+          color={message.color}
+        />
       ))}
-      </div>
+      </ul>
     );
   }
 }
-
-// const MessageList = ({messages}) => (
-//   <div>
-//     {messages.map( (message, i) => <Message key={i} username={message.username} message={message.content}/>)}
-//   </div>
-// )
 export default MessageList;
