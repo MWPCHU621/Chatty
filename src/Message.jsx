@@ -21,18 +21,18 @@ const Message = ({
             />
           </span>
         </div>
-      </li>)
+    </li>)
   : (<li className="messages">
         <div className="message">
           <span className="message-username" style={{color:color}}>{username}</span>
           <span className="message-content">{message}</span>
         </div>
-      </li>)
+    </li>)
 : (<li className = "messages">
       <div className="message system">
         {message}
       </div>
-    </li>);
+  </li>);
 
 
 export default Message;
